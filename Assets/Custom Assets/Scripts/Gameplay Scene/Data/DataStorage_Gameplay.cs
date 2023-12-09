@@ -80,17 +80,8 @@ public class NormalAttackContent
 {
     public NormalAttackType type = new NormalAttackType();
     public int amount;
-    public List<NormalAttackEvent> tgrEvents = new List<NormalAttackEvent>();
-    public List<NormalAttackEvent> endEvents = new List<NormalAttackEvent>();
-
-    //
-    public bool occured;
-}
-
-//--------------------------------------------------
-public enum NormalAttackEvent
-{
-    Null = 0, TurnEnd = 1, EndPhase = 2, BefHitDet = 3, WhenHitDet = 4,
+    public List<GameEventsTiming> tgrEvents = new List<GameEventsTiming>();
+    public List<GameEventsTiming> endEvents = new List<GameEventsTiming>();
 }
 
 //--------------------------------------------------
@@ -116,18 +107,8 @@ public class SpecialAttack1Content
 {
     public SpecialAttack1Type type = new SpecialAttack1Type();
     public int amount;
-    public List<SpecialAttack1Event> tgrEvents = new List<SpecialAttack1Event>();
-    public List<SpecialAttack1Event> endEvents = new List<SpecialAttack1Event>();
-
-    //
-    public bool occured;
-}
-
-//--------------------------------------------------
-public enum SpecialAttack1Event
-{
-    Null = 0,
-    TurnEnd = 1, EndPhase = 2, BefHitDet = 3, WhenHitDet = 4, AftAtk = 5, ImmTgr = 6, AtkSucc = 7, NextRound = 8,
+    public List<GameEventsTiming> tgrEvents = new List<GameEventsTiming>();
+    public List<GameEventsTiming> endEvents = new List<GameEventsTiming>();
 }
 
 //--------------------------------------------------
@@ -155,18 +136,8 @@ public class SpecialAttack2Content
 {
     public SpecialAttack2Type type = new SpecialAttack2Type();
     public int amount;
-    public List<SpecialAttack2Event> tgrEvents = new List<SpecialAttack2Event>();
-    public List<SpecialAttack2Event> endEvents = new List<SpecialAttack2Event>();
-
-    //
-    public bool occured;
-}
-
-//--------------------------------------------------
-public enum SpecialAttack2Event
-{
-    Null = 0,
-    TurnEnd = 1, EndPhase = 2, BefHitDet = 3, WhenHitDet = 4, AtkSucc = 5, AftAtk = 6, ImmTgr = 7,
+    public List<GameEventsTiming> tgrEvents = new List<GameEventsTiming>();
+    public List<GameEventsTiming> endEvents = new List<GameEventsTiming>();
 }
 
 //--------------------------------------------------
@@ -187,23 +158,9 @@ public enum SpecialAttack2Type
 public class UniqueAbility
 {
     public string dsc;
-    public List<UniqueAbilityEvent> tgrEvents = new List<UniqueAbilityEvent>();
-    public List<UniqueAbilityEvent> endEvents = new List<UniqueAbilityEvent>();
+    public List<GameEventsTiming> tgrEvents = new List<GameEventsTiming>();
+    public List<GameEventsTiming> endEvents = new List<GameEventsTiming>();
     public UniqueAbilityType type = new UniqueAbilityType();
-
-    //
-    public bool occured;
-}
-
-//--------------------------------------------------
-public enum UniqueAbilityEvent
-{
-    Null = 0,
-    Type01 = 1, Type02 = 2, Type03 = 3, Type04 = 4,
-    Type05 = 5, Type06 = 6, Type07 = 7, Type08 = 8, Type09 = 9,
-    Type10 = 10, Type11 = 11, Type12 = 12, Type13 = 13, Type14 = 14,
-    Type15 = 15, Type16 = 16,
-    TurnEnd = 17, RndEnd = 18,
 }
 
 //--------------------------------------------------
@@ -222,19 +179,9 @@ public enum UniqueAbilityType
 public class ShienAbility
 {
     public string dsc;
-    public ShienAbilityEvent tgrEvent = new ShienAbilityEvent();
-    public ShienAbilityEvent endEvent = new ShienAbilityEvent();
+    public List<GameEventsTiming> tgrEvent = new List<GameEventsTiming>();
+    public List<GameEventsTiming> endEvent = new List<GameEventsTiming>();
     public ShienAbilityType type = new ShienAbilityType();
-
-    //
-    public bool occured;
-}
-
-//--------------------------------------------------
-public enum ShienAbilityEvent
-{
-    Null = 0,
-    NextAtk = 1, NextDmg = 2, BtlPhase = 3, HpRec = 4, EndPhase = 5,
 }
 
 //--------------------------------------------------
@@ -247,7 +194,7 @@ public enum ShienAbilityType
 //--------------------------------------------------
 public enum AttackType
 {
-    Null = 0, All = 1, Normal = 2, Spc1 = 3, Spc2 = 4,
+    Null = 0, Normal = 1, Spc1 = 2, Spc2 = 3,
 }
 
 //--------------------------------------------------
@@ -328,12 +275,7 @@ public class ItemCardData
     public string dsc;
     public int rare;
     public bool noroi;
-    public List<ItemEvent> tgrEvents = new List<ItemEvent>();
-    public List<ItemEvent> endEvents = new List<ItemEvent>();
     public List<ItemCardContent> contents = new List<ItemCardContent>();
-
-    //
-    public bool occured;
 }
 
 //--------------------------------------------------
@@ -341,6 +283,8 @@ public class ItemCardContent
 {
     public ItemContentType type = new ItemContentType();
     public int amount;
+    public List<GameEventsTiming> tgrEvents = new List<GameEventsTiming>();
+    public List<GameEventsTiming> endEvents = new List<GameEventsTiming>();
 }
 
 //--------------------------------------------------
@@ -354,15 +298,6 @@ public enum ItemContentType
     Type20 = 20, Type21 = 21, Type22 = 22, Type23 = 23, Type24 = 24,
     Type25 = 25, Type26 = 26, Type27 = 27, Type28 = 28, Type29 = 29,
     Type30 = 30, Type31 = 31, Type32 = 32, Type33 = 33,
-}
-
-//--------------------------------------------------
-public enum ItemEvent
-{
-    Null = 0, UnitDead = -1,
-    ImmTgr = 1, HitSuccOver8 = 2, AftAtk = 3, NlAtk = 4, SpcAtk = 5, HitSuccOver6 = 6, AtkSucc = 7,
-    AftHitJudge = 8, TurnStart = 9, HpNoDec = 10, TakeDmg = 11, DefCorrExistSpcAtk = 12, TakeShien = 13,
-    AftDice = 14,
 }
 
 #endregion
@@ -572,23 +507,23 @@ public enum ActionType
 //////////////////////////////////////////////////////////////////////
 #region BattleInfo
 
-    //--------------------------------------------------
-    public class BattleInfo
-    {
-        public int mihariUnitCount;
+//--------------------------------------------------
+public class BattleInfo
+{
+    public int mihariUnitCount;
 
-        public int discardUnitCount;
+    public int discardUnitCount;
 
-        public int ken, deadKen;
+    public int ken, deadKen;
 
-        public int ma, deadMa;
+    public int ma, deadMa;
 
-        public int yumi, deadYumi;
+    public int yumi, deadYumi;
 
-        public int fushi, deadFushi;
+    public int fushi, deadFushi;
 
-        public int ryu, deadRyu;
-    }
+    public int ryu, deadRyu;
+}
 
 #endregion
 
@@ -679,122 +614,13 @@ public class GameEventsData
             return value;
         }
     }
-
-    public GameEventData GetGEventFromAEvent(NormalAttackEvent aEvent_pr)
-    {
-        GameEventData gEvent_tp = new GameEventData();
-
-        for(int i = 0; i < gEvents.Count; i++)
-        {
-            if (gEvents[i].nlEvent == aEvent_pr)
-            {
-                gEvent_tp = gEvents[i];
-                break;
-            }
-        }
-
-        return gEvent_tp;
-    }
-
-    public GameEventData GetGEventFromAEvent(SpecialAttack1Event aEvent_pr)
-    {
-        GameEventData gEvent_tp = new GameEventData();
-
-        for (int i = 0; i < gEvents.Count; i++)
-        {
-            if (gEvents[i].spc1Event == aEvent_pr)
-            {
-                gEvent_tp = gEvents[i];
-                break;
-            }
-        }
-
-        return gEvent_tp;
-    }
-
-    public GameEventData GetGEventFromAEvent(SpecialAttack2Event aEvent_pr)
-    {
-        GameEventData gEvent_tp = new GameEventData();
-
-        for (int i = 0; i < gEvents.Count; i++)
-        {
-            if (gEvents[i].spc2Event == aEvent_pr)
-            {
-                gEvent_tp = gEvents[i];
-                break;
-            }
-        }
-
-        return gEvent_tp;
-    }
-
-    public GameEventData GetGEventFromAEvent(UniqueAbilityEvent aEvent_pr)
-    {
-        GameEventData gEvent_tp = new GameEventData();
-
-        for (int i = 0; i < gEvents.Count; i++)
-        {
-            if (gEvents[i].uniqEvent == aEvent_pr)
-            {
-                gEvent_tp = gEvents[i];
-                break;
-            }
-        }
-
-        return gEvent_tp;
-    }
-
-    public GameEventData GetGEventFromAEvent(ShienAbilityEvent aEvent_pr)
-    {
-        GameEventData gEvent_tp = new GameEventData();
-
-        for (int i = 0; i < gEvents.Count; i++)
-        {
-            if (gEvents[i].shienEvent == aEvent_pr)
-            {
-                gEvent_tp = gEvents[i];
-                break;
-            }
-        }
-
-        return gEvent_tp;
-    }
-
-    public GameEventData GetGEventFromAEvent(ItemEvent aEvent_pr)
-    {
-        GameEventData gEvent_tp = new GameEventData();
-
-        for (int i = 0; i < gEvents.Count; i++)
-        {
-            if (gEvents[i].itemEvent == aEvent_pr)
-            {
-                gEvent_tp = gEvents[i];
-                break;
-            }
-        }
-
-        return gEvent_tp;
-    }
 }
 
 //--------------------------------------------------
 public class GameEventData
 {
     public int id;
-    public string dsc;
     public GameEventsTiming timing = new GameEventsTiming();
-    public NormalAttackEvent nlEvent = new NormalAttackEvent();
-    public SpecialAttack1Event spc1Event = new SpecialAttack1Event();
-    public SpecialAttack2Event spc2Event = new SpecialAttack2Event();
-    public UniqueAbilityEvent uniqEvent = new UniqueAbilityEvent();
-    public ShienAbilityEvent shienEvent = new ShienAbilityEvent();
-    public ItemEvent itemEvent = new ItemEvent();
-}
-
-//--------------------------------------------------
-public class GameEventCollector
-{
-    public GameEventsTiming gTiming = new GameEventsTiming();
 }
 
 //--------------------------------------------------
@@ -810,6 +636,12 @@ public enum GameEventsTiming
     AftSuccDetDest = 30, TurnStart = 31, HpNoReduce = 32, TakeDmg = 33, SpcAtkWithDefCorr = 34,
     TakeShien = 35, AftDice = 36,
     RndEnd = 37,
+}
+
+//--------------------------------------------------
+public class GameEventsInfo
+{
+    public GameEventsTiming gTiming = new GameEventsTiming();
 }
 
 #endregion

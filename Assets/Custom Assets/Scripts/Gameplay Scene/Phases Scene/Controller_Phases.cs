@@ -79,10 +79,10 @@ public class Controller_Phases : MonoBehaviour
     public Player_Phases localPlayer_Cp, otherPlayer_Cp, comPlayer_Cp;
 
     [ReadOnly]
-    public List<GameEventCollector> curGEventCollr = new List<GameEventCollector>();
+    public List<GameEventsInfo> curGEventCollr = new List<GameEventsInfo>();
 
     [ReadOnly]
-    public List<GameEventCollector> waitGEventCollr = new List<GameEventCollector>();
+    public List<GameEventsInfo> waitGEventCollr = new List<GameEventsInfo>();
 
     //-------------------------------------------------- private fields
 

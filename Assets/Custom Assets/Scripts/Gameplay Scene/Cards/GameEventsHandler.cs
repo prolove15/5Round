@@ -304,12 +304,12 @@ public class GameEventsHandler : MonoBehaviour
         get { return controller_Cp.data_Cp.parEffects; }
     }
 
-    List<GameEventCollector> curGEventCollr
+    List<GameEventsInfo> curGEventCollr
     {
         get { return controller_Cp.curGEventCollr; }
     }
 
-    List<GameEventCollector> waitGEventCollr
+    List<GameEventsInfo> waitGEventCollr
     {
         get { return controller_Cp.waitGEventCollr; }
     }
@@ -514,7 +514,7 @@ public class GameEventsHandler : MonoBehaviour
             }
         }
 
-        if (gEventData_tp.spc1Event != SpecialAttack1Event.Null)
+        if (gEventData_tp.spc1Event != GameEventsTiming.Null)
         {
             if (atkType_pr == AttackType.Spc1 || atkType_pr == AttackType.All)
             {
@@ -525,7 +525,7 @@ public class GameEventsHandler : MonoBehaviour
             }
         }
 
-        if (gEventData_tp.spc2Event != SpecialAttack2Event.Null)
+        if (gEventData_tp.spc2Event != GameEventsTiming.Null)
         {
             if (atkType_pr == AttackType.Spc2 || atkType_pr == AttackType.All)
             {
@@ -584,7 +584,7 @@ public class GameEventsHandler : MonoBehaviour
     IEnumerator Corou_HandleCurGameEvents(GameEventsTiming gTiming_pr, Hash128 hash_pr)
     {
         //
-        GameEventCollector gEventCollr_tp = new GameEventCollector();
+        GameEventsInfo gEventCollr_tp = new GameEventsInfo();
         gEventCollr_tp.gTiming = gTiming_pr;
 
         curGEventCollr.Add(gEventCollr_tp);
@@ -596,7 +596,7 @@ public class GameEventsHandler : MonoBehaviour
     }
 
     //--------------------------------------------------
-    bool CompareCurAndWaitGEvents(GameEventCollector curGEventCollr_pr)
+    bool CompareCurAndWaitGEvents(GameEventsInfo curGEventCollr_pr)
     {
         bool result = true;
 
@@ -704,12 +704,12 @@ public class GameEventsHandler : MonoBehaviour
     #region Handle spc1 atk events
 
     //--------------------------------------------------
-    public void HandleSpcAtk1Events(UnitCard unit_Cp_pr, SpecialAttack1Event spcAtk1Event_pr, Hash128 hash_pr)
+    public void HandleSpcAtk1Events(UnitCard unit_Cp_pr, GameEventsTiming spcAtk1Event_pr, Hash128 hash_pr)
     {
         StartCoroutine(Corou_HandleSpcAtk1Events(unit_Cp_pr, spcAtk1Event_pr, hash_pr));
     }
 
-    IEnumerator Corou_HandleSpcAtk1Events(UnitCard unit_Cp_pr, SpecialAttack1Event spcAtk1Event_pr, Hash128 hash_pr)
+    IEnumerator Corou_HandleSpcAtk1Events(UnitCard unit_Cp_pr, GameEventsTiming spcAtk1Event_pr, Hash128 hash_pr)
     {
         //
         GameEventData eventData_tp = gEventsData.GetGEventFromAEvent(spcAtk1Event_pr);
@@ -733,12 +733,12 @@ public class GameEventsHandler : MonoBehaviour
     #region Handle spc2 atk events
 
     //--------------------------------------------------
-    public void HandleSpcAtk2Events(UnitCard unit_Cp_pr, SpecialAttack2Event spcAtk2Event_pr, Hash128 hash_pr)
+    public void HandleSpcAtk2Events(UnitCard unit_Cp_pr, GameEventsTiming spcAtk2Event_pr, Hash128 hash_pr)
     {
         StartCoroutine(Corou_HandleSpcAtk2Events(unit_Cp_pr, spcAtk2Event_pr, hash_pr));
     }
 
-    IEnumerator Corou_HandleSpcAtk2Events(UnitCard unit_Cp_pr, SpecialAttack2Event spcAtk2Event_pr, Hash128 hash_pr)
+    IEnumerator Corou_HandleSpcAtk2Events(UnitCard unit_Cp_pr, GameEventsTiming spcAtk2Event_pr, Hash128 hash_pr)
     {
         //
         GameEventData eventData_tp = gEventsData.GetGEventFromAEvent(spcAtk2Event_pr);
@@ -1100,7 +1100,7 @@ public class GameEventsHandler : MonoBehaviour
         yield return new WaitUntil(() => !hashStates.Contains(hash_tp));
 
         //
-        GameEventCollector waitGEventCollr_tp = new GameEventCollector();
+        GameEventsInfo waitGEventCollr_tp = new GameEventsInfo();
         waitGEventCollr_tp.gTiming = GameEventsTiming.RndEnd;
         waitGEventCollr.Add(waitGEventCollr_tp);
 

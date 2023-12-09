@@ -662,7 +662,7 @@ public class DataManager_Gameplay : MonoBehaviour
                     }
                     else if (j >= 18 && j <= 19)
                     {
-                        nlAtkTgrEvent = NormalAttackEvent.WhenHitDet;
+                        nlAtkTgrEvent = NormalAttackEvent.AftHitDet;
                     }
                     nlAtkCont.tgrEvents.Add(nlAtkTgrEvent);
 
@@ -690,22 +690,22 @@ public class DataManager_Gameplay : MonoBehaviour
 
                     if (j >= 23 && j <= 29)
                     {
-                        spcAtk1Cont.tgrEvents.Add(SpecialAttack1Event.BefHitDet);
+                        spcAtk1Cont.tgrEvents.Add(GameEventsTiming.BefHitDet);
                     }
                     if (j >= 32 && j <= 41)
                     {
-                        spcAtk1Cont.tgrEvents.Add(SpecialAttack1Event.BefHitDet);
-                        spcAtk1Cont.tgrEvents.Add(SpecialAttack1Event.ImmTgr);
+                        spcAtk1Cont.tgrEvents.Add(GameEventsTiming.BefHitDet);
+                        spcAtk1Cont.tgrEvents.Add(GameEventsTiming.ImmTgr);
                     }
 
                     if (j >= 23 && j <= 37)
                     {
-                        spcAtk1Cont.endEvents.Add(SpecialAttack1Event.TurnEnd);
-                        spcAtk1Cont.endEvents.Add(SpecialAttack1Event.EndPhase);
+                        spcAtk1Cont.endEvents.Add(GameEventsTiming.TurnEnd);
+                        spcAtk1Cont.endEvents.Add(GameEventsTiming.EndPhase);
                     }
                     else if (j >= 38 && j <= 41)
                     {
-                        spcAtk1Cont.endEvents.Add(SpecialAttack1Event.NextRound);
+                        spcAtk1Cont.endEvents.Add(GameEventsTiming.NextRound);
                     }
 
                     unitCardData.spcAtk1.contents.Add(spcAtk1Cont);
@@ -729,31 +729,31 @@ public class DataManager_Gameplay : MonoBehaviour
 
                     if (j >= 45 && j <= 61)
                     {
-                        spcAtk2Cont.tgrEvents.Add(SpecialAttack2Event.BefHitDet);
+                        spcAtk2Cont.tgrEvents.Add(GameEventsTiming.BefHitDet);
                     }
                     else if (j >= 62 && j <= 63)
                     {
-                        spcAtk2Cont.tgrEvents.Add(SpecialAttack2Event.ImmTgr);
-                        spcAtk2Cont.tgrEvents.Add(SpecialAttack2Event.BefHitDet);
+                        spcAtk2Cont.tgrEvents.Add(GameEventsTiming.ImmTgr);
+                        spcAtk2Cont.tgrEvents.Add(GameEventsTiming.BefHitDet);
                     }
                     else if (j >= 64 && j <= 68)
                     {
-                        spcAtk2Cont.tgrEvents.Add(SpecialAttack2Event.ImmTgr);
-                        spcAtk2Cont.tgrEvents.Add(SpecialAttack2Event.WhenHitDet);
+                        spcAtk2Cont.tgrEvents.Add(GameEventsTiming.ImmTgr);
+                        spcAtk2Cont.tgrEvents.Add(GameEventsTiming.WhenHitDet);
                     }
                     else if (j >= 69 && j <= 72)
                     {
-                        spcAtk2Cont.tgrEvents.Add(SpecialAttack2Event.ImmTgr);
-                        spcAtk2Cont.tgrEvents.Add(SpecialAttack2Event.AtkSucc);
+                        spcAtk2Cont.tgrEvents.Add(GameEventsTiming.ImmTgr);
+                        spcAtk2Cont.tgrEvents.Add(GameEventsTiming.AtkSucc);
                     }
                     else if (j >= 73 && j <= 81)
                     {
-                        spcAtk2Cont.tgrEvents.Add(SpecialAttack2Event.ImmTgr);
-                        spcAtk2Cont.tgrEvents.Add(SpecialAttack2Event.AftAtk);
+                        spcAtk2Cont.tgrEvents.Add(GameEventsTiming.ImmTgr);
+                        spcAtk2Cont.tgrEvents.Add(GameEventsTiming.AftAtk);
                     }
 
-                    spcAtk2Cont.endEvents.Add(SpecialAttack2Event.TurnEnd);
-                    spcAtk2Cont.endEvents.Add(SpecialAttack2Event.EndPhase);
+                    spcAtk2Cont.endEvents.Add(GameEventsTiming.TurnEnd);
+                    spcAtk2Cont.endEvents.Add(GameEventsTiming.EndPhase);
 
                     //
                     unitCardData.spcAtk2.contents.Add(spcAtk2Cont);
@@ -919,11 +919,11 @@ public class DataManager_Gameplay : MonoBehaviour
             }
             if (!string.IsNullOrEmpty(row[3].ToString()))
             {
-                gameEventData.spc1Event = (SpecialAttack1Event)(int.Parse(row[3].ToString()));
+                gameEventData.spc1Event = (GameEventsTiming)(int.Parse(row[3].ToString()));
             }
             if (!string.IsNullOrEmpty(row[4].ToString()))
             {
-                gameEventData.spc2Event = (SpecialAttack2Event)(int.Parse(row[4].ToString()));
+                gameEventData.spc2Event = (GameEventsTiming)(int.Parse(row[4].ToString()));
             }
             if (!string.IsNullOrEmpty(row[5].ToString()))
             {
