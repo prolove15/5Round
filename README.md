@@ -31,7 +31,7 @@ C# プログラミング言語
 ## 🖼️ スクリーンショット
 
 <p>
-  <a href="https://ibb.co/whHrqVy"><img src="https://i.ibb.co/qYGF8KB/topcontent1-725-420v2-01.jpg" alt="topcontent1-725-420v2-01" border="0"></a>
+  <a href="https://ibb.co/mDg8qY1"><img src="https://i.ibb.co/f1LvpKB/ogp-twitter2-01.jpg" alt="ogp-twitter2-01" border="0"></a>
 </p>
 
 <p>
