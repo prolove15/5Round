@@ -1,2 +1,2 @@
-# 5Round_2
-This is card game
+# 5Round
+This is Japanese card game
