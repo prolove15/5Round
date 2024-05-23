@@ -235,15 +235,15 @@ public class Controller_StrPhase : MonoBehaviour
 
         localPlayer_Cp = controller_Cp.localPlayer_Cp_de;
 
-        otherPlayer_Cp = controller_Cp.otherPlayer_Cp;
+        otherPlayer_Cp = controller_Cp.otherPlayer_Cp_de;
 
-        comPlayer_Cp = controller_Cp.comPlayer_Cp;
+        comPlayer_Cp = controller_Cp.comPlayer_Cp_de;
 
         cam_Tf = controller_Cp.cam_Tf;
 
         statusManager_Cp = controller_Cp.statusManager_Cp;
 
-        localPlayerID = controller_Cp.localPlayerID;
+        localPlayerID = controller_Cp.localPlayerID_de;
     }
 
     //--------------------------------------------------

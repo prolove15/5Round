@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-public class ProgressHandler : MonoBehaviour
+public class ProgressHandler : MonoBehaviourPunCallbacks, IPunObservable
 {
 
     //////////////////////////////////////////////////////////////////////
@@ -24,6 +25,7 @@ public class ProgressHandler : MonoBehaviour
         SupplyPhaseStarted, SupplyPhaseFinished,
         EndPhaseStarted, EndPhaseFinished,
         NextPhaseClicked,
+        ReadyForNextPhase,
     }
 
     #endregion
@@ -37,17 +39,21 @@ public class ProgressHandler : MonoBehaviour
 
     //-------------------------------------------------- serialize fields
     [SerializeField] public GameInfo gameInfo;
+    [SerializeField] public RoundHandler rndHandler_Cp;
+    [SerializeField] public StrPhaseHandler strPhase_Cp;
+    [SerializeField] public BattlePhaseHandler btlPhase_Cp;
+    [SerializeField] public DiceHandler diceHandler_Cp;
 
     //-------------------------------------------------- public fields
     [SerializeField][ReadOnly] List<GameState_En> gameStates = new List<GameState_En>();
 
     //-------------------------------------------------- private fields
     Controller_Phases controller_Cp;
-    PlayerFaction player1_Cp, player2_Cp;
+    PlayerFaction player1_Cp, player2_Cp, localPlayer_Cp, otherPlayer_Cp;
+    List<PlayerFaction> player_Cps = new List<PlayerFaction>();
     UI_GameCanvas gameUI_Cp;
     UI_PanelCanvas panelUI_Cp;
     NoticePanel modalNotice_Cp;
-    RoundHandler rndHandler_Cp;
 
     #endregion
 
@@ -65,7 +71,30 @@ public class ProgressHandler : MonoBehaviour
         set { gameStates[0] = value; }
     }
 
+    public bool hasAuthority
+    {
+        get
+        {
+            bool result = false;
+            if (isOnline)
+            {
+                if (photonView.IsMine)
+                {
+                    result = true;
+                }
+            }
+            else
+            {
+                result = true;
+            }
+            return result;
+        }
+    }
+    public bool isMine { get { return photonView.IsMine && PhotonNetwork.IsConnectedAndReady; } }
+
     //-------------------------------------------------- private properties
+    bool isServer { get { return PhotonNetwork.IsMasterClient || !isOnline; } }
+    bool isOnline { get { return PhotonNetwork.IsConnectedAndReady; } }
 
     #endregion
 
@@ -192,23 +221,27 @@ public class ProgressHandler : MonoBehaviour
         controller_Cp = GameObject.FindWithTag("GameController").GetComponent<Controller_Phases>();
         player1_Cp = controller_Cp.player_Cps[0];
         player2_Cp = controller_Cp.player_Cps[1];
+        player_Cps = controller_Cp.player_Cps;
+        localPlayer_Cp = controller_Cp.localPlayer_Cp;
+        otherPlayer_Cp = controller_Cp.otherPlayer_Cp;
         gameUI_Cp = controller_Cp.ui_gameCanvas_Cp;
         panelUI_Cp = controller_Cp.ui_panelCanvas_Cp;
         modalNotice_Cp = panelUI_Cp.modalNotice_Cp;
-        rndHandler_Cp = controller_Cp.rndHandler_Cp;
     }
 
     //--------------------------------------------------
     void InitComponents()
     {
         rndHandler_Cp.Init();
+        strPhase_Cp.Init();
+        btlPhase_Cp.Init();
+        diceHandler_Cp.Init();
     }
 
     //--------------------------------------------------
     void InitVariables()
     {
-        gameInfo.turnIndex = -1;
-        gameInfo.rndIndex = -1;
+        
     }
 
     #endregion
@@ -255,12 +288,8 @@ public class ProgressHandler : MonoBehaviour
     {
         AddGameStates(GameState_En.TurnStarted);
 
-        // set turn index
-        SetTurnIndex(turnIndex_tp);
-        yield return new WaitForSeconds(1f);
-
         // play phases
-        PlayStartPhase();
+        PlayStartPhase(turnIndex_tp);
         yield return new WaitUntil(() => ExistGameStates(GameState_En.StartPhaseFinished));
         RemoveGameStates(GameState_En.StartPhaseFinished);
 
@@ -285,13 +314,6 @@ public class ProgressHandler : MonoBehaviour
         AddGameStates(GameState_En.TurnFinished);
     }
 
-    //--------------------------------------------------
-    void SetTurnIndex(int turnIndex_tp)
-    {
-        gameInfo.turnIndex = turnIndex_tp;
-        gameUI_Cp.SetTurnIndex(gameInfo.turnIndex + 1);
-    }
-
     #endregion
 
     //////////////////////////////////////////////////////////////////////
@@ -302,23 +324,39 @@ public class ProgressHandler : MonoBehaviour
     #region Play start phase
 
     //-------------------------------------------------- 
-    void PlayStartPhase()
+    void PlayStartPhase(int turnIndex_tp)
     {
-        StartCoroutine(Corou_PlayStartPhase());
+        StartCoroutine(Corou_PlayStartPhase(turnIndex_tp));
     }
 
-    IEnumerator Corou_PlayStartPhase()
+    IEnumerator Corou_PlayStartPhase(int turnIndex_tp)
     {
         AddGameStates(GameState_En.StartPhaseStarted);
 
+        // set turn index
+        SetTurnIndex(turnIndex_tp);
+        yield return new WaitForSeconds(1f);
+
         // set phase name
         SetPhaseName(PhaseNames.startPhase);
-        modalNotice_Cp.SetContent("開始フェーズ", "AP Up, SPマーカーを受信", 2f);
-        yield return new WaitForSeconds(3f);
-
-        // up ap
-        UpAp();
         yield return new WaitForSeconds(1f);
+
+        // play start phase
+        for (int i = 0; i < player_Cps.Count; i++)
+        {
+            player_Cps[i].PlayStartPhase();
+        }
+        for (int i = 0; i < player_Cps.Count; i++)
+        {
+            yield return new WaitUntil(() => player_Cps[i].ExistGameStates(
+                    PlayerFaction.GameState_En.StartPhaseFinished));
+            player_Cps[i].RemoveGameStates(PlayerFaction.GameState_En.StartPhaseFinished);
+        }
+
+        // wait next phase clicked
+        SetActiveNextPhaseBtn(true);
+        yield return new WaitUntil(() => ExistGameStates(GameState_En.ReadyForNextPhase));
+        RemoveGameStates(GameState_En.ReadyForNextPhase);
 
         //
         RemoveGameStates(GameState_En.StartPhaseStarted);
@@ -344,21 +382,9 @@ public class ProgressHandler : MonoBehaviour
     {
         AddGameStates(GameState_En.StrPhaseStarted);
 
-        // set phase name
-        SetPhaseName(PhaseNames.strPhase);
-        modalNotice_Cp.SetTitle(PhaseNames.strPhase, 2f);
-        yield return new WaitForSeconds(3f);
-
-        // set cycle time
-        SetActiveCycleTimePanel(true);
-        SetCycleTime(120);
-
-        // wait both player ready
-        yield return new WaitUntil(() => ExistGameStates(GameState_En.NextPhaseClicked)); // temporary code
-        RemoveGameStates(GameState_En.NextPhaseClicked);
-
-        // disable cycle time
-        SetActiveCycleTimePanel(false);
+        // play str phase
+        strPhase_Cp.PlayPhase();
+        yield return new WaitUntil(() => strPhase_Cp.mainGameState == StrPhaseHandler.GameState_En.PhaseFinished);
 
         //
         RemoveGameStates(GameState_En.StrPhaseStarted);
@@ -384,30 +410,9 @@ public class ProgressHandler : MonoBehaviour
     {
         AddGameStates(GameState_En.BattlePhaseStarted);
 
-        // set phase name
-        SetPhaseName(PhaseNames.btlPhase);
-        modalNotice_Cp.SetTitle(PhaseNames.btlPhase, 2f);
-        yield return new WaitForSeconds(3f);
-
-        // set active round index panel
-        gameUI_Cp.SetActiveRndIndexPanel(true);
-
-        // play round
-        for (int i = 0; i < 5; i++)
-        {
-            rndHandler_Cp.PlayRound(i);
-            yield return new WaitUntil(() => rndHandler_Cp.ExistGameStates(RoundHandler.GameState_En.RoundFinished));
-            rndHandler_Cp.RemoveGameStates(RoundHandler.GameState_En.RoundFinished);
-        }
-
-        // reset round index
-        gameUI_Cp.SetActiveRndIndexPanel(false);
-        gameInfo.rndIndex = -1;
-
-        // wait next phase click
-        yield return new WaitUntil(() => ExistGameStates(GameState_En.NextPhaseClicked));
-        RemoveGameStates(GameState_En.NextPhaseClicked);
-
+        btlPhase_Cp.PlayPhase();
+        yield return new WaitUntil(() => btlPhase_Cp.mainGameState == BattlePhaseHandler.GameState_En.PhaseFinished);
+        
         //
         RemoveGameStates(GameState_En.BattlePhaseStarted);
         AddGameStates(GameState_En.BattlePhaseFinished);
@@ -434,7 +439,6 @@ public class ProgressHandler : MonoBehaviour
 
         // set phase name
         SetPhaseName(PhaseNames.supplyPhase);
-        modalNotice_Cp.SetTitle(PhaseNames.supplyPhase, 2f);
         yield return new WaitForSeconds(3f);
 
         // play supply phase
@@ -469,7 +473,6 @@ public class ProgressHandler : MonoBehaviour
 
         // set phase name
         SetPhaseName(PhaseNames.endPhase);
-        modalNotice_Cp.SetTitle(PhaseNames.endPhase, 2f);
         yield return new WaitForSeconds(3f);
 
         // play end phase
@@ -487,60 +490,168 @@ public class ProgressHandler : MonoBehaviour
 
     //////////////////////////////////////////////////////////////////////
     /// <summary>
-    /// Internal methods
+    /// Set phase name
     /// </summary>
     //////////////////////////////////////////////////////////////////////
-    #region Internal methods
+    #region Set phase name
 
     //--------------------------------------------------
-    void SetPhaseName(string phaseName_tp)
+    public void SetPhaseName(string phaseName_tp)
+    {
+        if (hasAuthority)
+        {
+            gameInfo.phaseName = phaseName_tp;
+        }
+        if (hasAuthority)
+        {
+            if (isOnline) { photonView.RPC("Rpc_SetPhaseName", RpcTarget.All, phaseName_tp); }
+            else { Offline_SetPhaseName(phaseName_tp); }
+        }
+    }
+
+    //--------------------------------------------------
+    [PunRPC]
+    void Rpc_SetPhaseName(string phaseName_tp)
+    {
+        Offline_SetPhaseName(phaseName_tp);
+    }
+
+    void Offline_SetPhaseName(string phaseName_tp)
     {
         gameUI_Cp.SetPhaseIndex(phaseName_tp);
+        modalNotice_Cp.SetContent("第" + (gameInfo.turnIndex + 1).ToString() + "ターン", phaseName_tp, 2f);
     }
 
     #endregion
 
     //////////////////////////////////////////////////////////////////////
     /// <summary>
-    /// External methods
+    /// Set turn index
     /// </summary>
     //////////////////////////////////////////////////////////////////////
-    #region External methods
+    #region Set turn index
 
     //--------------------------------------------------
-    public void UpAp()
+    void SetTurnIndex(int turnIndex_tp)
     {
-        player1_Cp.playerAp++;
-        player2_Cp.playerAp++;
-        gameUI_Cp.SetAp(0, player1_Cp.playerAp);
-        gameUI_Cp.SetAp(1, player2_Cp.playerAp);
+        if (hasAuthority)
+        {
+            gameInfo.turnIndex = turnIndex_tp;
+        }
+        if (isMine)
+        {
+            photonView.RPC("Rpc_SetTurnIndex", RpcTarget.All, gameInfo.turnIndex);
+        }
+        else
+        {
+            Offline_SetTurnInde(turnIndex_tp);
+        }
     }
 
-    //--------------------------------------------------
-    public void SetCycleTime(int time_tp)
+    [PunRPC]
+    void Rpc_SetTurnIndex(int turnIndex_tp)
     {
-        gameUI_Cp.SetCycleTime(time_tp);
+        Offline_SetTurnInde(turnIndex_tp);
     }
 
-    //--------------------------------------------------
-    public void SetActiveCycleTimePanel(bool flag)
+    void Offline_SetTurnInde(int turnIndex_tp)
     {
-        gameUI_Cp.SetActiveCycleTimePanel(flag);
+        gameUI_Cp.SetTurnIndex(turnIndex_tp + 1);
     }
 
     #endregion
 
     //////////////////////////////////////////////////////////////////////
     /// <summary>
-    /// External callback
+    /// Handle next phase button
     /// </summary>
     //////////////////////////////////////////////////////////////////////
-    #region External callback 
+    #region Handle next phase button 
 
     //--------------------------------------------------
     public void OnClickNextPhase()
     {
-        AddGameStates(GameState_En.NextPhaseClicked);
+        if (gameInfo.phaseName == PhaseNames.startPhase)
+        {
+            ReadyForNextPhase_StartPhase();
+        }
+        else if (gameInfo.phaseName == PhaseNames.strPhase)
+        {
+            strPhase_Cp.OnClickNextPhaseBtn();
+        }
+        else if (gameInfo.phaseName == PhaseNames.btlPhase)
+        {
+            btlPhase_Cp.OnClickToNextPhase();
+        }
+        else if (gameInfo.phaseName == PhaseNames.supplyPhase)
+        {
+
+        }
+        else if (gameInfo.phaseName == PhaseNames.endPhase)
+        {
+
+        }
+    }
+
+    //--------------------------------------------------
+    public void SetActiveNextPhaseBtn(bool flag)
+    {
+        gameUI_Cp.SetActiveNextPhaseBtn(flag);
+    }
+
+    //--------------------------------------------------
+    public void ReadyForNextPhase_StartPhase()
+    {
+        StartCoroutine(Corou_ReadyForNextPhase_StartPhase());
+    }
+
+    IEnumerator Corou_ReadyForNextPhase_StartPhase()
+    {
+        SetActiveNextPhaseBtn(false);
+
+        if (player1_Cp.hasAuthority) { player1_Cp.isReadyForNextPhase = true; }
+        if (player2_Cp.hasAuthority) { player2_Cp.isReadyForNextPhase = true; }
+
+        // check all players are ready
+        yield return new WaitUntil(() => player1_Cp.isReadyForNextPhase && player2_Cp.isReadyForNextPhase);
+        yield return new WaitForSeconds(1f);
+
+        if (player1_Cp.hasAuthority) { player1_Cp.isReadyForNextPhase = false; }
+        if (player2_Cp.hasAuthority) { player2_Cp.isReadyForNextPhase = false; }
+        for (int i = 0; i < player_Cps.Count; i++)
+        {
+            yield return new WaitUntil(() => !player_Cps[i].isReadyForNextPhase);
+        }
+
+        AddGameStates(GameState_En.ReadyForNextPhase);
+    }
+
+    #endregion
+
+    //////////////////////////////////////////////////////////////////////
+    /// <summary>
+    /// Network callback
+    /// </summary>
+    //////////////////////////////////////////////////////////////////////
+    #region Network callback
+
+    //--------------------------------------------------
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(gameInfo.turnIndex);
+            stream.SendNext(gameInfo.phaseName);
+            stream.SendNext(gameInfo.rndIndex);
+            stream.SendNext(gameInfo.cycleDur);
+        }
+        else
+        {
+            gameInfo.turnIndex = (int)stream.ReceiveNext();
+            gameInfo.phaseName = (string)stream.ReceiveNext();
+            gameInfo.rndIndex = (int)stream.ReceiveNext();
+            gameInfo.cycleDur = (int)stream.ReceiveNext();
+        }
     }
 
     #endregion

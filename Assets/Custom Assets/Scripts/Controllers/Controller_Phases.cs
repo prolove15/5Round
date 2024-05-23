@@ -43,7 +43,6 @@ public class Controller_Phases : MonoBehaviour
     [SerializeField] public List<PlayerFaction> player_Cps = new List<PlayerFaction>();
     [SerializeField] public Data_Phases data_Cp;
     [SerializeField] public ProgressHandler progHandler_Cp;
-    [SerializeField] public RoundHandler rndHandler_Cp;
     [SerializeField] public NetworkHandler netHandler_Cp;
 
     [SerializeField]
@@ -65,7 +64,7 @@ public class Controller_Phases : MonoBehaviour
     public List<Player_Phases> player_Cps_de = new List<Player_Phases>(); // depreciated
 
     [SerializeField]
-    public DiceHandler diceHandler_Cp;
+    public DiceHandler_de diceHandler_Cp;
 
     [SerializeField]
     List<int> p1UnitIndexes = new List<int>();
@@ -81,13 +80,13 @@ public class Controller_Phases : MonoBehaviour
     public DataManager_Gameplay dataManager_Cp;
 
     [ReadOnly]
-    public int localPlayerID, otherPlayerID, comPlayerID;
+    public int localPlayerID_de, otherPlayerID_de, comPlayerID_de;
 
     [ReadOnly]
-    public Player_Phases localPlayer_Cp_de, otherPlayer_Cp, comPlayer_Cp; // depreciated
+    public Player_Phases localPlayer_Cp_de, otherPlayer_Cp_de, comPlayer_Cp_de; // depreciated
 
-    [ReadOnly] public PlayerFaction localPlayer_Cp;
-    [ReadOnly] public int localPlayerId;
+    [ReadOnly] public PlayerFaction localPlayer_Cp, otherPlayer_Cp, comPlayer_Cp;
+    [ReadOnly] public int localPlayerId, otherPlayerId, comPlayerId;
 
     //-------------------------------------------------- private fields
 
@@ -106,6 +105,8 @@ public class Controller_Phases : MonoBehaviour
         get { return gameStates[0]; }
         set { gameStates[0] = value; }
     }
+
+    bool isOnline { get { return PhotonNetwork.IsConnectedAndReady; } }
 
     //-------------------------------------------------- private properties
 
@@ -249,21 +250,23 @@ public class Controller_Phases : MonoBehaviour
         // get data
         yield return new WaitUntil(() => ExistGameStates(GameState_En.InitDataManagerFinished));
         RemoveGameStates(GameState_En.InitDataManagerFinished);
-
         GetDataFromDataManager();
 
         // net handler
-        netHandler_Cp.Init();
-        yield return new WaitUntil(() => netHandler_Cp.mainGameState == NetworkHandler.GameState_En.Inited
-            || netHandler_Cp.mainGameState == NetworkHandler.GameState_En.InitFailed);
-        if (netHandler_Cp.mainGameState == NetworkHandler.GameState_En.InitFailed)
+        if (netHandler_Cp.isOnline)
         {
-            ReturnToMainScene();
-            yield break;
+            netHandler_Cp.Init();
+            yield return new WaitUntil(() => netHandler_Cp.mainGameState == NetworkHandler.GameState_En.Inited
+                || netHandler_Cp.mainGameState == NetworkHandler.GameState_En.InitFailed);
+            if (netHandler_Cp.mainGameState == NetworkHandler.GameState_En.InitFailed)
+            {
+                ReturnToMainScene();
+                yield break;
+            }
         }
 
         //
-        SetComponents();
+        SetPlayerComponents();
 
         //
         InitComponents();
@@ -304,18 +307,59 @@ public class Controller_Phases : MonoBehaviour
     }
 
     //--------------------------------------------------
-    void SetComponents()
+    void SetPlayerComponents()
     {
-        for (int i = 0; i < player_Cps.Count; i++)
+        if (netHandler_Cp.isOnline)
         {
-            if (player_Cps[i].isLocalPlayer)
+            if (player_Cps[0].hasAuthority)
             {
-                localPlayer_Cp = player_Cps[i];
-                break;
+                localPlayer_Cp = player_Cps[0];
+                localPlayer_Cp.isLocalPlayer = true;
+                otherPlayer_Cp = player_Cps[1];
+                otherPlayer_Cp.isLocalPlayer = false;
+            }
+            else
+            {
+                localPlayer_Cp = player_Cps[1];
+                localPlayer_Cp.isLocalPlayer = true;
+                otherPlayer_Cp = player_Cps[0];
+                otherPlayer_Cp.isLocalPlayer = false;
+            }
+            if (PhotonNetwork.PlayerList.Length == 2)
+            {
+                localPlayer_Cp.isCom = false;
+                otherPlayer_Cp.isCom = false;
+                comPlayerId = -1;
+            }
+            else
+            {
+                otherPlayer_Cp.isCom = true;
+                comPlayer_Cp = otherPlayer_Cp;
+                comPlayerId = comPlayer_Cp.playerId;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < player_Cps.Count; i++)
+            {
+                if (player_Cps[i].isLocalPlayer)
+                {
+                    localPlayer_Cp = player_Cps[i];
+                }
+                else
+                {
+                    otherPlayer_Cp = player_Cps[i];
+                }
+                if (player_Cps[i].isCom)
+                {
+                    comPlayer_Cp = player_Cps[i];
+                    comPlayerId = comPlayer_Cp.playerId;
+                }
             }
         }
 
         localPlayerId = localPlayer_Cp.playerId;
+        otherPlayerId = otherPlayer_Cp.playerId;
     }
 
     //--------------------------------------------------
@@ -361,6 +405,13 @@ public class Controller_Phases : MonoBehaviour
 
     IEnumerator Corou_ReadyToPlay()
     {
+        if (netHandler_Cp.isOnline)
+        {
+            netHandler_Cp.ReadyToPlay();
+            yield return new WaitUntil(() => netHandler_Cp.ExistGameStates(NetworkHandler.GameState_En.AllReadyToPlay));
+            netHandler_Cp.RemoveGameStates(NetworkHandler.GameState_En.AllReadyToPlay);
+        }
+
         //
         ui_topCanvas_Cp.Finish_Load();
         yield return new WaitUntil(() => ui_topCanvas_Cp.mainGameState
@@ -381,6 +432,7 @@ public class Controller_Phases : MonoBehaviour
     //-------------------------------------------------- ReturnToMain
     public void ReturnToMainScene()
     {
+        Debug.LogError("ReturnToMainScene");
         curtainUI_Cp.Show(false, () => HandleReturnToMainScene());
     }
 

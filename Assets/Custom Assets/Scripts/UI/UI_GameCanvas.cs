@@ -28,16 +28,14 @@ public class UI_GameCanvas : MonoBehaviour
     #region Fields
 
     //-------------------------------------------------- serialize fields
-    [SerializeField] Text p1NameText_Cp, p2NameText_Cp;
-    [SerializeField] Text p1ApText_Cp, p2ApText_Cp;
     [SerializeField] Text turnIndexText_Cp;
     [SerializeField] Text rndIndexText_Cp;
     [SerializeField] GameObject rndIndexPanel_GO;
     [SerializeField] Text phaseText_Cp;
     [SerializeField] GameObject phasePanel_GO;
-    [SerializeField] Animator cycleTimeAnim_Cp;
-    [SerializeField] Text cycleTimeText_Cp;
     [SerializeField] GameObject cycleTimePanel_GO;
+    [SerializeField] GameObject nextPhaseBtn_GO;
+    [SerializeField] public List<GameUI_PlayerUI> playerUI_Cps;
 
     //-------------------------------------------------- public fields
     [ReadOnly]
@@ -46,6 +44,8 @@ public class UI_GameCanvas : MonoBehaviour
     //-------------------------------------------------- private fields
     Controller_Phases controller_Cp;
     Data_Phases data_Cp;
+    [ReadOnly] public CycleTimeHandler cycleHandler_Cp;
+    [ReadOnly] public GameUI_PlayerUI localPlayerUI_Cp, otherPlayerUI_Cp;
 
     #endregion
 
@@ -179,6 +179,7 @@ public class UI_GameCanvas : MonoBehaviour
         AddMainGameState(GameState_En.Nothing);
 
         SetComponents();
+        InitComponents();
         InitUI();
 
         mainGameState = GameState_En.Inited;
@@ -189,6 +190,15 @@ public class UI_GameCanvas : MonoBehaviour
     {
         controller_Cp = GameObject.FindWithTag("GameController").GetComponent<Controller_Phases>();
         data_Cp = controller_Cp.data_Cp;
+        cycleHandler_Cp = cycleTimePanel_GO.GetComponent<CycleTimeHandler>();
+        localPlayerUI_Cp = playerUI_Cps[0]; // it will be modified later
+        otherPlayerUI_Cp = playerUI_Cps[1]; // it will be modified later
+    }
+
+    //--------------------------------------------------
+    void InitComponents()
+    {
+        cycleHandler_Cp.Init();
     }
 
     //--------------------------------------------------
@@ -199,9 +209,14 @@ public class UI_GameCanvas : MonoBehaviour
         SetTurnIndex(0);
         SetRoundIndex(0);
         SetPhaseIndex(PhaseNames.Null);
-        SetCycleTime(0);
         SetActiveRndIndexPanel(false);
-        SetActiveCycleTimePanel(false);
+        SetActiveNextPhaseBtn(false);
+        SetIsReadyForNextPhase(0, false);
+        SetIsReadyForNextPhase(1, false);
+        for (int i = 0; i < 2; i++)
+        {
+            playerUI_Cps[i].SetActiveFireImage(false);
+        }
     }
 
     #endregion
@@ -216,29 +231,14 @@ public class UI_GameCanvas : MonoBehaviour
     //--------------------------------------------------
     public void SetPlayerName(int playerId_tp, string playerName_tp)
     {
-        if (playerId_tp == 0)
-        {
-            p1NameText_Cp.text = playerName_tp;
-        }
-        else if (playerId_tp == 1)
-        {
-            p2NameText_Cp.text = playerName_tp;
-        }
+        playerUI_Cps[playerId_tp].SetPlayerName(playerName_tp);
     }
 
     //--------------------------------------------------
     public void SetAp(int playerId_tp, int ap_tp)
     {
-        if (playerId_tp == 0)
-        {
-            p1ApText_Cp.text = "AP: " + ap_tp.ToString();
-            GenHighlightEffect(p1ApText_Cp.transform);
-        }
-        else if (playerId_tp == 1)
-        {
-            p2ApText_Cp.text = "AP: " + ap_tp.ToString();
-            GenHighlightEffect(p2ApText_Cp.transform);
-        }
+        playerUI_Cps[playerId_tp].SetPlayerAp(ap_tp);
+        GenHighlightEffect(playerUI_Cps[playerId_tp].playerApText_Cp.transform);
     }
 
     //--------------------------------------------------
@@ -268,16 +268,15 @@ public class UI_GameCanvas : MonoBehaviour
     }
 
     //--------------------------------------------------
-    public void SetCycleTime(int cycleTime_tp)
+    public void SetActiveNextPhaseBtn(bool flag)
     {
-        cycleTimeText_Cp.text = cycleTime_tp.ToString();
-        GenHighlightEffect(cycleTimeText_Cp.transform);
-        //cycleTimeAnim_Cp.SetTrigger("pulse");
+        nextPhaseBtn_GO.SetActive(flag);
     }
 
-    public void SetActiveCycleTimePanel(bool flag)
+    //--------------------------------------------------
+    public void SetIsReadyForNextPhase(int playerId_tp, bool flag)
     {
-        cycleTimePanel_GO.SetActive(flag);
+        playerUI_Cps[playerId_tp].SetActiveIsReady(flag);
     }
 
     #endregion

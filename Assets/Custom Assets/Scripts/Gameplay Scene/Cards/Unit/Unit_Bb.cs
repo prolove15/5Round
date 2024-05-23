@@ -310,7 +310,6 @@ public class Unit_Bb : Unit
     //--------------------------------------------------
     public void OnClickUnitBtn()
     {
-        print("OnClickUnitBtn started");
         panelUI_Cp.ViewCard(this);
     }
 

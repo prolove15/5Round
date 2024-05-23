@@ -216,7 +216,7 @@ public class Controller_StartPhase : MonoBehaviour
     void SetVariables()
     {
         //
-        localPlayerID = controller_Cp.localPlayerID;
+        localPlayerID = controller_Cp.localPlayerID_de;
     }
 
     //--------------------------------------------------

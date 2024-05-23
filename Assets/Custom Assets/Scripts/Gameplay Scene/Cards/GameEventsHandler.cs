@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using static UnitsAbilityHandler;
+using static UnitsAbilityHandler_de;
 
 public class GameEventsHandler : MonoBehaviour
 {
@@ -29,7 +29,7 @@ public class GameEventsHandler : MonoBehaviour
     //-------------------------------------------------- serialize fields
     // components    
     [SerializeField]
-    UnitsAbilityHandler unitAbil_Cp;
+    UnitsAbilityHandler_de unitAbil_Cp;
 
     [SerializeField]
     GameActionHandler gActHandler_Cp;
@@ -293,7 +293,7 @@ public class GameEventsHandler : MonoBehaviour
 
     public List<Hash128> hashStates
     {
-        get { return HashHandler.hashes; }
+        get { return HashHandler.instance.hashes; }
     }
 
     public Dictionary<Hash128, object> randObjects

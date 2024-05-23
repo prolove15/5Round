@@ -88,8 +88,7 @@ public class PlayerboardRound : MonoBehaviour
     //--------------------------------------------------
     void InitComponents()
     {
-        SetActiveBorderAnim(player_Cp.isLocalPlayer ? true : false);
-        SetActiveClikable(player_Cp.isLocalPlayer ? true : false);
+        SetActiveClickable(false);
         spMarkerPoint_GO.SetActive(false);
         shienUnit_GO.SetActive(false);
     }
@@ -175,15 +174,31 @@ public class PlayerboardRound : MonoBehaviour
     #region External interface
 
     //--------------------------------------------------
-    public void SetActiveBorderAnim(bool flag)
+    public void SetActiveClickable(bool flag)
     {
         borderAnim_Cp.SetTrigger(flag ? "show" : "hide");
+        rndBtn_Cp.interactable = flag;
     }
 
     //--------------------------------------------------
-    public void SetActiveClikable(bool flag)
+    public void ShowRoundValueOnPb(RoundValue rndValue_tp)
     {
-        rndBtn_Cp.interactable = flag;
+        switch (rndValue_tp.actionType)
+        {
+            case ActionType.Shien:
+                ShowRoundValueOnPb_Shien(rndValue_tp);
+                break;
+            case ActionType.Move:
+                ShowRoundValueOnPb_Move(rndValue_tp);
+                break;
+            case ActionType.Atk:
+                ShowRoundValueOnPb_Atk(rndValue_tp);
+                break;
+        }
+        if (rndValue_tp.spCount > 0)
+        {
+            ShowRoundValueOnPb_Guard(rndValue_tp);
+        }
     }
 
     #endregion
@@ -202,8 +217,27 @@ public class PlayerboardRound : MonoBehaviour
         markersData.useSp -= roundsData[rndValue_tp.index].spCount;
         markersData.useSp += rndValue_tp.spCount;
         roundsData[rndValue_tp.index].spCount = rndValue_tp.spCount;
+        if (rndValue_tp.spCount > 0)
+        {
+            if (roundsData[rndValue_tp.index].actionType == ActionType.Null)
+            {
+                roundsData[rndValue_tp.index].actionType = ActionType.Guard;
+            }
+        }
+        else if (rndValue_tp.spCount == 0)
+        {
+            if (roundsData[rndValue_tp.index].actionType == ActionType.Guard)
+            {
+                roundsData[rndValue_tp.index].actionType = ActionType.Null;
+            }
+        }
 
         // handle panel
+        ShowRoundValueOnPb_Guard(rndValue_tp);
+    }
+
+    void ShowRoundValueOnPb_Guard(RoundValue rndValue_tp)
+    {
         SetSpMarkersText(rndValue_tp.spCount);
     }
 
@@ -217,9 +251,15 @@ public class PlayerboardRound : MonoBehaviour
         roundsData[roundId].actionType = rndValue_tp.actionType;
         roundsData[roundId].tokenType = rndValue_tp.tokenType;
         roundsData[roundId].shienUnitId = rndValue_tp.shienUnitId;
+        roundsData[roundId].oriUnitIndex = rndValue_tp.oriUnitIndex;
         roundsData[roundId].tarUnitIndex = rndValue_tp.tarUnitIndex;
 
         // add token and shien
+        ShowRoundValueOnPb_Shien(rndValue_tp);
+    }
+
+    void ShowRoundValueOnPb_Shien(RoundValue rndValue_tp)
+    {
         AddTokenObj(tokensData.shien_Pf, (rndValue_tp.tarUnitIndex + 2));
         UnitCardData unitData_tp = controller_Cp.dataManager_Cp.GetUnitCardDataFromCardIndex(rndValue_tp.shienUnitId);
         AddShienUnit(unitData_tp);
@@ -243,6 +283,11 @@ public class PlayerboardRound : MonoBehaviour
         roundsData[roundId].tarUnitIndex = rndValue_tp.tarUnitIndex;
 
         // add token
+        ShowRoundValueOnPb_Move(rndValue_tp);
+    }
+
+    void ShowRoundValueOnPb_Move(RoundValue rndValue_tp)
+    {
         GameObject token_Pf_tp = null;
         switch (rndValue_tp.tokenType)
         {
@@ -271,6 +316,11 @@ public class PlayerboardRound : MonoBehaviour
         roundsData[roundId].atkType = rndValue_tp.atkType;
 
         // add token
+        ShowRoundValueOnPb_Atk(rndValue_tp);
+    }
+
+    void ShowRoundValueOnPb_Atk(RoundValue rndValue_tp)
+    {
         GameObject token_Pf_tp = null;
         switch (rndValue_tp.tokenType)
         {

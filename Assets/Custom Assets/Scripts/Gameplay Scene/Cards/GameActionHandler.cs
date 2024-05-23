@@ -55,7 +55,7 @@ public class GameActionHandler : MonoBehaviour
 
     public List<Hash128> hashStates
     {
-        get { return HashHandler.hashes; }
+        get { return HashHandler.instance.hashes; }
     }
 
     //-------------------------------------------------- private properties

@@ -173,7 +173,6 @@ public class CardView : MonoBehaviour
             diceAmountCorrText_Cp.text = "ダイス 効果補正: " + unitInfo_tp.diceAmountCorr.ToString();
         }
 
-        print("ShowBbUnitUI, bbUnit_Cp_tp" + bbUnit_Cp_tp.name);
         // show panel
         uiPanel_Cp.Show();
 
@@ -184,7 +183,6 @@ public class CardView : MonoBehaviour
 
     void HideBbUnit()
     {
-        print("HideBbUnit started");
         uiPanel_Cp.Hide();
     }
 

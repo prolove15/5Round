@@ -82,7 +82,7 @@ public class Player_Phases : MonoBehaviour
 
     // battle phase
     [SerializeField]
-    public UnitsAbilityHandler unitAbil_Cp;
+    public UnitsAbilityHandler_de unitAbil_Cp;
 
     [SerializeField]
     Transform takaraPointsGroup_Tf;
@@ -170,7 +170,7 @@ public class Player_Phases : MonoBehaviour
 
     public List<Hash128> hashStates
     {
-        get { return HashHandler.hashes; }
+        get { return HashHandler.instance.hashes; }
     }
 
     //-------------------------------------------------- private properties
@@ -308,12 +308,9 @@ public class Player_Phases : MonoBehaviour
     {
         AddMainGameState(GameState_En.Nothing);
 
-        //
         SetComponents();
-
         InitVariables();
 
-        //
         mainGameState = GameState_En.Inited;
     }
 
@@ -394,7 +391,7 @@ public class Player_Phases : MonoBehaviour
 
             bUnit_Cps[i].InitHpPanel();
             bUnit_Cps[i].SetHp(bUnitCardsData[i].hp);
-            if (playerID == controller_Cp.localPlayerID)
+            if (playerID == controller_Cp.localPlayerID_de)
             {
                 bUnit_Cps[i].SetHpVisible(true);
             }
@@ -1077,8 +1074,8 @@ public class Player_Phases : MonoBehaviour
         //
         unitAbil_Cp.PlayRoundAction(roundIndex);
         yield return new WaitUntil(() => unitAbil_Cp.ExistGameStates(
-            UnitsAbilityHandler.GameState_En.ActionFinished));
-        unitAbil_Cp.RemoveGameStates(UnitsAbilityHandler.GameState_En.ActionFinished);
+            UnitsAbilityHandler_de.GameState_En.ActionFinished));
+        unitAbil_Cp.RemoveGameStates(UnitsAbilityHandler_de.GameState_En.ActionFinished);
 
         //****************************** game events 14th. when round end
         Hash128 hash2_tp = RegRandHashValue();
@@ -1110,8 +1107,8 @@ public class Player_Phases : MonoBehaviour
         //
         unitAbil_Cp.FinishRound();
         yield return new WaitUntil(() => unitAbil_Cp.ExistGameStates(
-            UnitsAbilityHandler.GameState_En.RoundFinished));
-        unitAbil_Cp.RemoveGameStates(UnitsAbilityHandler.GameState_En.RoundFinished);
+            UnitsAbilityHandler_de.GameState_En.RoundFinished));
+        unitAbil_Cp.RemoveGameStates(UnitsAbilityHandler_de.GameState_En.RoundFinished);
 
         //
         AddGameStates(GameState_En.RoundFinished);

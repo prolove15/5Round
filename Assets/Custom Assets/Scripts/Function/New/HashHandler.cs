@@ -14,12 +14,10 @@ using UnityEngine;
 //--------------------------------------------------
 public class HashHandler : MonoBehaviour
 {
-    static HashHandler instance;
-
-    public static List<Hash128> hashes = new List<Hash128>();
+    public static HashHandler instance;
 
     [ReadOnly]
-    public List<Hash128> hash = new List<Hash128>();
+    public List<Hash128> hashes = new List<Hash128>();
 
     private void Awake()
     {
@@ -34,11 +32,9 @@ public class HashHandler : MonoBehaviour
         {
             result = Hash128.Compute(Time.time.ToString() + UnityEngine.Random.value.ToString());
         }
-        while (hashes.Contains(result));
+        while (instance.hashes.Contains(result));
 
-        hashes.Add(result);
-
-        instance.hash = hashes;
+        instance.hashes.Add(result);
 
         return result;
     }
@@ -47,18 +43,16 @@ public class HashHandler : MonoBehaviour
     {
         foreach (Hash128 hash_tp in hashes_pr)
         {
-            if (hashes.Contains(hash_tp))
+            if (instance.hashes.Contains(hash_tp))
             {
-                hashes.Remove(hash_tp);
+                instance.hashes.Remove(hash_tp);
             }
         }
-
-        instance.hash = hashes;
     }
 
     public static bool ContainsHash(Hash128 hash_pr)
     {
-        return hashes.Contains(hash_pr);
+        return instance.hashes.Contains(hash_pr);
     }
 }
 

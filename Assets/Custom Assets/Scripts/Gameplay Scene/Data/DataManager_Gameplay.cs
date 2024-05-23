@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using System;
-using UnityEditor;
 using System.Text;
 
 public class DataManager_Gameplay : MonoBehaviour
@@ -65,11 +64,8 @@ public class DataManager_Gameplay : MonoBehaviour
         itemsBackSideRsPath = "Sprites/ItemCards/BackSide";
 
     // real game data
-    [SerializeField]
-    string realGameplayDataPath = "Data/GameplayData/GameplayData.xlsx";
-
-    [SerializeField]
-    string gameEventsDataPath = "Data/GameplayData/GameEvents.xlsx";
+    [SerializeField] string realGameplayDataPath = "Data/GameplayData/GameplayData.xlsx";
+    [SerializeField] string gameEventsDataPath = "Data/GameplayData/GameEvents.xlsx";
 
     [SerializeField]
     string unitTbName = "UnitList",
@@ -158,7 +154,7 @@ public class DataManager_Gameplay : MonoBehaviour
 
     public List<Hash128> hashStates
     {
-        get { return HashHandler.hashes; }
+        get { return HashHandler.instance.hashes; }
     }
 
     //-------------------------------------------------- private properties
@@ -559,16 +555,16 @@ public class DataManager_Gameplay : MonoBehaviour
         //DebugHandler.instance.AddDebugInfo("SetDataset started");
         //DebugHandler.instance.AddDebugInfo("dataPath = " + Application.dataPath.ToString());
         //
-        realGameplayDataPath = Application.dataPath + "/" + realGameplayDataPath;
-        FileStream stream = File.Open(realGameplayDataPath, FileMode.Open, FileAccess.Read);
+        FileStream stream = File.Open(Application.dataPath + "/" + realGameplayDataPath,
+            FileMode.Open, FileAccess.Read);
         IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream,
             new ExcelReaderConfiguration() { FallbackEncoding = Encoding.UTF8 });
         playData_dataSet = excelReader.AsDataSet();
         excelReader.Close();
 
         //
-        gameEventsDataPath = Application.dataPath + "/" + gameEventsDataPath;
-        FileStream stream_Events = File.Open(gameEventsDataPath, FileMode.Open, FileAccess.Read);
+        FileStream stream_Events = File.Open(Application.dataPath + "/" + gameEventsDataPath,
+            FileMode.Open, FileAccess.Read);
         IExcelDataReader excelReader_Events = ExcelReaderFactory.CreateOpenXmlReader(stream_Events);
         events_dataSet = excelReader_Events.AsDataSet();
         excelReader_Events.Close();
@@ -633,8 +629,10 @@ public class DataManager_Gameplay : MonoBehaviour
             //
             unitCardData.id = int.Parse(row[0].ToString());
             unitCardData.name = row[1].ToString();
-            unitCardData.frontSide = await LoadSprite(unitsRsPath + "/" + row[2].ToString());
-            unitCardData.backSide = await LoadSprite(unitsBackSideRsPath + "/" + row[3].ToString());
+            //unitCardData.frontSide = await LoadSprite(unitsRsPath + "/" + row[2].ToString());
+            //unitCardData.backSide = await LoadSprite(unitsBackSideRsPath + "/" + row[3].ToString());
+            unitCardData.frontSide = await LoadSprite(row[2].ToString());
+            unitCardData.backSide = await LoadSprite(row[3].ToString());
             unitCardData.cost = int.Parse(row[4].ToString());
 
             if (row[5].ToString().Contains("ふし"))
@@ -1303,7 +1301,7 @@ public class DataManager_Gameplay : MonoBehaviour
         }
         else
         {
-            Debug.LogError("LoadSprite, load sprite has been failed");
+            Debug.LogError("Failed, path = " + path);
         }
 
         return result;

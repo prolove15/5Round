@@ -362,9 +362,9 @@ public class UI_StrPhase : MonoBehaviour
 
         localPlayer_Cp = controller_Cp.localPlayer_Cp_de;
 
-        otherPlayer_Cp = controller_Cp.otherPlayer_Cp;
+        otherPlayer_Cp = controller_Cp.otherPlayer_Cp_de;
 
-        localPlayerID = controller_Cp.localPlayerID;
+        localPlayerID = controller_Cp.localPlayerID_de;
     }
 
     //--------------------------------------------------

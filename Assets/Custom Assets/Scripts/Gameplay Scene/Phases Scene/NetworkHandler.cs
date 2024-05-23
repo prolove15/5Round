@@ -1,7 +1,6 @@
 using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class NetworkHandler : MonoBehaviourPun
@@ -20,6 +19,7 @@ public class NetworkHandler : MonoBehaviourPun
         InitOnlineModeSucc, InitOnlineModeFailed,
         NetworkReadyToStart,
         AssignLocalPlayerFinished,
+        ReadyToPlay, AllReadyToPlay
     }
 
     #endregion
@@ -55,6 +55,7 @@ public class NetworkHandler : MonoBehaviourPun
     }
 
     public bool isOnline { get { return PhotonNetwork.IsConnectedAndReady; } }
+    public bool isServer { get { return PhotonNetwork.IsMasterClient || !isOnline; } }
 
     //-------------------------------------------------- private properties
     Controller_Phases controller_Cp;
@@ -190,27 +191,21 @@ public class NetworkHandler : MonoBehaviourPun
 
         SetComponents();
 
-        if (isOnline)
+        InitOnlineMode();
+        yield return new WaitUntil(() => ExistAnyGameStates(GameState_En.InitOnlineModeSucc,
+            GameState_En.InitOnlineModeFailed));
+        if (ExistGameStates(GameState_En.InitOnlineModeSucc))
         {
-            InitOnlineMode();
-            yield return new WaitUntil(() => ExistAnyGameStates(GameState_En.InitOnlineModeSucc,
-                GameState_En.InitOnlineModeFailed));
-            if (ExistGameStates(GameState_En.InitOnlineModeSucc))
-            {
-                RemoveGameStates(GameState_En.InitOnlineModeSucc);
-            }
-            else if (ExistGameStates(GameState_En.InitOnlineModeFailed))
-            {
-                RemoveGameStates(GameState_En.InitOnlineModeFailed);
-                mainGameState = GameState_En.InitFailed;
-            }
+            RemoveGameStates(GameState_En.InitOnlineModeSucc);
+            mainGameState = GameState_En.Inited;
+            yield break;
         }
-        else
+        else if (ExistGameStates(GameState_En.InitOnlineModeFailed))
         {
-            InitOfflineMode();
+            RemoveGameStates(GameState_En.InitOnlineModeFailed);
+            mainGameState = GameState_En.InitFailed;
+            yield break;
         }
-
-        mainGameState = GameState_En.Inited;
     }
 
     //--------------------------------------------------
@@ -228,16 +223,23 @@ public class NetworkHandler : MonoBehaviourPun
 
     IEnumerator Corou_InitOnlineMode()
     {
+        // cehck network is ready
+        photonView.RPC("Rpc_NetworkReadyToStart", RpcTarget.MasterClient);
+
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            yield break;
+        }
+
         // check network is ready
         float curTime = Time.time;
         float maxWaitTime = 15f;
-        photonView.RPC("NetworkReadyToStart", RpcTarget.MasterClient);
         yield return new WaitUntil(() => GetExistGameStatesCount(GameState_En.NetworkReadyToStart)
             == PhotonNetwork.PlayerList.Length || (Time.time - curTime) > maxWaitTime);
         if (GetExistGameStatesCount(GameState_En.NetworkReadyToStart) < PhotonNetwork.PlayerList.Length)
         {
             RemoveGameStates(GameState_En.NetworkReadyToStart);
-            AddGameStates(GameState_En.InitOnlineModeFailed);
+            photonView.RPC("Rpc_SetGameState", RpcTarget.All, GameState_En.InitOnlineModeFailed);
             yield break;
         }
         else
@@ -246,15 +248,14 @@ public class NetworkHandler : MonoBehaviourPun
         }
 
         // assign ownership
-        if (PhotonNetwork.IsMasterClient)
+        for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
         {
-            for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
-            {
-                player_Cps[i].photonView.TransferOwnership(PhotonNetwork.PlayerList[i]);
-            }
-            photonView.RPC("AssignLocalPlayer", RpcTarget.All);
+            player_Cps[i].photonView.TransferOwnership(PhotonNetwork.PlayerList[i]);
+            yield return new WaitUntil(() => player_Cps[i].photonView.Owner == PhotonNetwork.PlayerList[i]);
         }
+        photonView.RPC("Rpc_AssignLocalPlayer", RpcTarget.All);
 
+        // wait assign ownership is finished
         curTime = Time.time;
         maxWaitTime = 15f;
         yield return new WaitUntil(() => GetExistGameStatesCount(GameState_En.AssignLocalPlayerFinished)
@@ -262,52 +263,28 @@ public class NetworkHandler : MonoBehaviourPun
         if (GetExistGameStatesCount(GameState_En.AssignLocalPlayerFinished) < PhotonNetwork.PlayerList.Length)
         {
             RemoveGameStates(GameState_En.AssignLocalPlayerFinished);
-            AddGameStates(GameState_En.InitOnlineModeFailed);
+            photonView.RPC("Rpc_SetGameState", RpcTarget.All, GameState_En.InitOnlineModeFailed);
             yield break;
         }
         else
         {
             RemoveGameStates(GameState_En.AssignLocalPlayerFinished);
         }
-        
+
         //
-        AddGameStates(GameState_En.InitOnlineModeSucc);
+        photonView.RPC("Rpc_SetGameState", RpcTarget.All, GameState_En.InitOnlineModeSucc);
     }
-
-    //--------------------------------------------------
-    void InitOfflineMode()
-    {
-
-    }
-        
-    #endregion
-
-    //////////////////////////////////////////////////////////////////////
-    /// <summary>
-    /// External interface
-    /// </summary>
-    //////////////////////////////////////////////////////////////////////
-    #region External interface
-
-    #endregion
-
-    //////////////////////////////////////////////////////////////////////
-    /// <summary>
-    /// Network interface
-    /// </summary>
-    //////////////////////////////////////////////////////////////////////
-    #region Network interface
 
     //--------------------------------------------------
     [PunRPC]
-    void NetworkReadyToStart()
+    void Rpc_NetworkReadyToStart()
     {
         AddGameStates(GameState_En.NetworkReadyToStart);
     }
 
     //--------------------------------------------------
     [PunRPC]
-    void AssignLocalPlayer()
+    void Rpc_AssignLocalPlayer()
     {
         if (player_Cps[0].photonView.IsMine)
         {
@@ -319,16 +296,66 @@ public class NetworkHandler : MonoBehaviourPun
             player_Cps[0].isLocalPlayer = false;
             player_Cps[1].isLocalPlayer = true;
         }
-
-        photonView.RPC("AssignLocalPlayerFinished", RpcTarget.MasterClient);
+        photonView.RPC("Rpc_AssignLocalPlayerFinished", RpcTarget.MasterClient);
     }
 
     //--------------------------------------------------
     [PunRPC]
-    void AssignLocalPlayerFinished()
+    void Rpc_AssignLocalPlayerFinished()
     {
         AddGameStates(GameState_En.AssignLocalPlayerFinished);
     }
+
+    //--------------------------------------------------
+    [PunRPC]
+    void Rpc_SetGameState(GameState_En gameState_tp)
+    {
+        AddGameStates(gameState_tp);
+    }
+
+    #endregion
+
+    //////////////////////////////////////////////////////////////////////
+    /// <summary>
+    /// Ready to play
+    /// </summary>
+    //////////////////////////////////////////////////////////////////////
+    #region Ready to play
+
+    //--------------------------------------------------
+    public void ReadyToPlay()
+    {
+        photonView.RPC("Master_ReadyToPlay", RpcTarget.MasterClient);
+    }
+
+    //--------------------------------------------------
+    [PunRPC]
+    void Master_ReadyToPlay()
+    {
+        AddGameStates(GameState_En.ReadyToPlay);
+
+        if (GetExistGameStatesCount(GameState_En.ReadyToPlay) == PhotonNetwork.PlayerList.Length)
+        {
+            RemoveGameStates(GameState_En.ReadyToPlay);
+            photonView.RPC("Rpc_ReadyToPlay", RpcTarget.All);
+        }
+    }
+
+    //--------------------------------------------------
+    [PunRPC]
+    void Rpc_ReadyToPlay()
+    {
+        AddGameStates(GameState_En.AllReadyToPlay);
+    }
+
+    #endregion
+
+    //////////////////////////////////////////////////////////////////////
+    /// <summary>
+    /// Network interface
+    /// </summary>
+    //////////////////////////////////////////////////////////////////////
+    #region Network interface
 
     #endregion
 

@@ -34,6 +34,11 @@ public class DebugHandler : MonoBehaviour
         debugText_Cp.text += "\r\n" + text.ToString();
     }
 
+    public static void Log(object text)
+    {
+        instance.debugText_Cp.text += "\r\n" + text.ToString();
+    }
+
     void InitDebugInfo()
     {
         debugText_Cp.text = "DebugInfo:";

@@ -44,6 +44,29 @@ MonoBehaviour:
   - AssignPlayerOwnership
   - AssignLocalPlayer
   - AssignLocalPlayerFinished
+  - Rpc_AssignLocalPlayer
+  - Rpc_AssignLocalPlayerFinished
+  - Rpc_NetworkReadyToStart
+  - Master_ReadyToPlay
+  - Rpc_ReadyToPlay
+  - Rpc_SetTurnIndex
+  - Rpc_PlayStartPhase_SetPhaseName
+  - Rpc_SetAp_UI
+  - Rpc_SetPhaseName
+  - Rpc_SetIsReadyForNextPhase_UI
+  - Rpc_SetGameState
+  - Rpc_SetPlayerActionPriority
+  - Rpc_SetActiveFireImage
+  - Receive_SetPlayerActionPriority
+  - Rpc_SetRoundIndexCheck
+  - Rpc_SetRoundIndexDone
+  - Rpc_OnPlayer_PlayRound
+  - Rpc_PrepareNextRound
+  - Rpc_SetAllActiveFireImage
+  - Rpc_SetIsReadyForNextPhase
+  - Rpc_SetIsTurn
+  - Rpc_SetRoundDoneFlag
+  - Rpc_SetRoundIndex_UI
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

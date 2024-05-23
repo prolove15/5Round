@@ -14246,7 +14246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84fd812a67908014cb408f749ca7a55e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainSceneName: 4 Phases
+  mainSceneName: Phases
   LoginPanel: {fileID: 964844637}
   PlayerNameInput: {fileID: 328590478}
   SelectionPanel: {fileID: 1771933899}

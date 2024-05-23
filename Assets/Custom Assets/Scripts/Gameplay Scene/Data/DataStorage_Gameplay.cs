@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -459,7 +459,7 @@ public class MarkersData_de
 [Serializable]
 public class MarkersData
 {
-    [SerializeField] public int sp, gold, ap, turn;
+    [SerializeField] public int sp, gold;
     [ReadOnly] public int useSp, useGold;
 
     public int restSp { get { return sp - useSp; } }
@@ -617,8 +617,9 @@ public class BattleInfo
 [Serializable]
 public class GameInfo
 {
-    [ReadOnly] public int turnIndex;
-    [ReadOnly] public int rndIndex;
+    [ReadOnly] public int turnIndex = -1;
+    [ReadOnly] public string phaseName;
+    [ReadOnly] public int rndIndex = -1;
     [ReadOnly] public int cycleDur;
     [ReadOnly] public int restDur;
 }
@@ -850,6 +851,13 @@ public class PhaseNames
     public static string btlPhase = "BtlPhase";
     public static string supplyPhase = "SuplyPhase";
     public static string endPhase = "EndPhase";
+}
+
+public class FactionNames
+{
+    public static string Null = "";
+    public static string p1Name = "赤と紫";
+    public static string p2Name = "青と緑";
 }
 
 #endregion

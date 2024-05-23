@@ -251,6 +251,7 @@ public class Action_ShienPanel : MonoBehaviour
             return;
         }
         rndValue_tp.shienUnitId = localPlayer_Cp.mUnitsData[shienUnitIndex_tp].id;
+        rndValue_tp.oriUnitIndex = shienUnitIndex_tp;
 
         int tarUnitIndex_tp = -1;
         if (shienTarSelect1_Cp.IsSelected())

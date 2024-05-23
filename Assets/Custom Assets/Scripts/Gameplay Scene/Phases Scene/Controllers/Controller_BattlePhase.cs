@@ -64,7 +64,7 @@ public class Controller_BattlePhase : MonoBehaviour
 
     Transform cam_Tf;
 
-    DiceHandler diceHandler_Cp;
+    DiceHandler_de diceHandler_Cp;
 
     int localPlayerID;
 
@@ -91,7 +91,7 @@ public class Controller_BattlePhase : MonoBehaviour
 
     public List<Hash128> hashStates
     {
-        get { return HashHandler.hashes; }
+        get { return HashHandler.instance.hashes; }
     }
 
     //-------------------------------------------------- private properties
@@ -262,10 +262,10 @@ public class Controller_BattlePhase : MonoBehaviour
         player_Cps = controller_Cp.player_Cps_de;
 
         localPlayer_Cp = controller_Cp.localPlayer_Cp_de;
-        otherPlayer_Cp = controller_Cp.otherPlayer_Cp;
-        comPlayer_Cp = controller_Cp.comPlayer_Cp;
+        otherPlayer_Cp = controller_Cp.otherPlayer_Cp_de;
+        comPlayer_Cp = controller_Cp.comPlayer_Cp_de;
 
-        localPlayerID = controller_Cp.localPlayerID;
+        localPlayerID = controller_Cp.localPlayerID_de;
 
         diceHandler_Cp = controller_Cp.diceHandler_Cp;
     }
@@ -668,8 +668,8 @@ public class Controller_BattlePhase : MonoBehaviour
         //
         diceHandler_Cp.ThrowDice();
         yield return new WaitUntil(() => diceHandler_Cp.ExistGameStates(
-            DiceHandler.GameState_En.DiceRollDone));
-        diceHandler_Cp.RemoveGameStates(DiceHandler.GameState_En.DiceRollDone);
+            DiceHandler_de.GameState_En.DiceRollDone));
+        diceHandler_Cp.RemoveGameStates(DiceHandler_de.GameState_En.DiceRollDone);
 
         //
         dice = diceHandler_Cp.diceTotalAmount;
@@ -677,8 +677,8 @@ public class Controller_BattlePhase : MonoBehaviour
         //
         diceHandler_Cp.ResetDiceRoll();
         yield return new WaitUntil(() => diceHandler_Cp.ExistGameStates(
-            DiceHandler.GameState_En.DiceRollFinished));
-        diceHandler_Cp.RemoveGameStates(DiceHandler.GameState_En.DiceRollFinished);
+            DiceHandler_de.GameState_En.DiceRollFinished));
+        diceHandler_Cp.RemoveGameStates(DiceHandler_de.GameState_En.DiceRollFinished);
 
         // remove action effect text
         btlUI_Cp.FinishActionEffText();

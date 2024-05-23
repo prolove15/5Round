@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Playerboard : MonoBehaviour
 {
@@ -29,6 +30,7 @@ public class Playerboard : MonoBehaviour
     //-------------------------------------------------- serialize fields
     [SerializeField] GameObject pbRnd_Pf;
     [SerializeField] Transform pbRndPointsGroup_Tf;
+    [SerializeField] CanvasUI curtainUI_Cp;
 
     //-------------------------------------------------- public fields
     [SerializeField][ReadOnly] List<GameState_En> gameStates = new List<GameState_En>();
@@ -38,6 +40,7 @@ public class Playerboard : MonoBehaviour
     //-------------------------------------------------- private fields
     Controller_Phases controller_Cp;
     PlayerFaction player_Cp;
+
     #endregion
 
     //////////////////////////////////////////////////////////////////////
@@ -69,15 +72,14 @@ public class Playerboard : MonoBehaviour
     /// </summary>
     //////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////
+    
+    private void Awake()
+    {
+        
+    }
 
     //-------------------------------------------------- Start is called before the first frame update
     void Start()
-    {
-
-    }
-
-    //-------------------------------------------------- Update is called once per frame
-    void Update()
     {
 
     }
@@ -180,7 +182,8 @@ public class Playerboard : MonoBehaviour
 
         SetComponents(player_Cp_tp);
         InstAndInitRoundBoards();
-        InitRoundsValue();
+        if (player_Cp.hasAuthority) { InitRoundsValue(); }
+        InitCurtain();
 
         mainGameState = GameState_En.Inited;
     }
@@ -214,17 +217,21 @@ public class Playerboard : MonoBehaviour
     {
         for (int i = 0; i < pbRnd_Cps.Count; i++)
         {
-            RoundValue rndValue_tp = new RoundValue();
-            rndValue_tp.index = i;
-            if (i == 0) rndValue_tp.minAgi = 6;
-            else if (i == 1) rndValue_tp.minAgi = 4;
-            else rndValue_tp.minAgi = 0;
-            rndValue_tp.shienUnitId = -1;
-            rndValue_tp.oriUnitIndex = -1;
-            rndValue_tp.tarUnitIndex = -1;
-
-            roundsData.rndValues.Add(rndValue_tp);
+            roundsData.rndValues[i].index = i;
+            if (i == 0) roundsData.rndValues[i].minAgi = 6;
+            else if (i == 1) roundsData.rndValues[i].minAgi = 4;
+            else roundsData.rndValues[i].minAgi = 0;
+            roundsData.rndValues[i].shienUnitId = -1;
+            roundsData.rndValues[i].oriUnitIndex = -1;
+            roundsData.rndValues[i].tarUnitIndex = -1;
         }
+    }
+
+    //--------------------------------------------------
+    void InitCurtain()
+    {
+        curtainUI_Cp.gameObject.SetActive(true);
+        ShowCurtain(false);
     }
 
     #endregion
@@ -234,7 +241,23 @@ public class Playerboard : MonoBehaviour
     {
         for (int i = 0; i < pbRnd_Cps.Count; i++)
         {
-            pbRnd_Cps[i].SetActiveClikable(flag);
+            pbRnd_Cps[i].SetActiveClickable(flag);
+        }
+    }
+
+    //--------------------------------------------------
+    public void ShowCurtain(bool flag, UnityAction action_tp = null)
+    {
+        if (flag) { curtainUI_Cp.Show(false, action_tp); }
+        else { curtainUI_Cp.Hide(false, action_tp); }
+    }
+
+    //--------------------------------------------------
+    public void ShowRoundsDataOnPb()
+    {
+        for (int i = 0; i < pbRnd_Cps.Count; i++)
+        {
+            pbRnd_Cps[i].ShowRoundValueOnPb(roundsData[i]);
         }
     }
 
