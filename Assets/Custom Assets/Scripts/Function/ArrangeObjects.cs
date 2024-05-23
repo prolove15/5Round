@@ -4,7 +4,11 @@ using UnityEngine;
 
 public class ArrangeObjects : MonoBehaviour
 {
-
+//////////////////////////////////////////////////////////////////////
+    /// <summary>
+    /// Handle moving to next phase
+    /// </summary>
+    //////////////////////////////////////////////////////////////////////
     public enum ArrangeRightDirection
     {
         LeftToRight, RightToLeft
